@@ -1,0 +1,8 @@
+.env
+data/
+vectorstore/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.streamlit/secrets.toml

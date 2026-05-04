@@ -1,0 +1,13 @@
+sec-edgar-downloader==4.0.0
+pymupdf==1.25.5
+langchain==0.2.16
+langchain-core==0.2.40
+langchain-community==0.2.16
+langchain-groq==0.1.9
+langchain-huggingface==0.0.3
+sentence-transformers==3.0.1
+faiss-cpu==1.9.0.post1
+streamlit==1.37.1
+python-dotenv==1.0.1
+pandas==2.2.2
+tqdm==4.66.5

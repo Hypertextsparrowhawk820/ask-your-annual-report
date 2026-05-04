@@ -1,6 +1,8 @@
 # app/app.py
 import os
 import sys
+import subprocess
+from startup import index_exists
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dotenv import load_dotenv
@@ -314,3 +316,33 @@ if user_input:
                         "sources": web_sources,
                         "source_type": "web"
                     })
+def setup_on_cold_start():
+    """Download PDFs and build index if not present (for cloud deployment)."""
+    vectorstore_path = os.path.join(
+        os.path.dirname(__file__), "..", "vectorstore"
+    )
+    faiss_path = os.path.join(vectorstore_path, "index.faiss")
+
+    if not os.path.exists(faiss_path):
+        with st.spinner("Setting up for first time — downloading filings and building index (3-5 mins)..."):
+            # download PDFs
+            sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+            from download_filings import download_all_filings
+            download_all_filings()
+
+            # build index
+            subprocess.run(
+                ["python", os.path.join(
+                    os.path.dirname(__file__), "..", "src", "build_index.py"
+                )],
+                check=True
+            )
+        st.success("Setup complete! Reloading...")
+        st.rerun()
+st.set_page_config(
+    page_title="Ask Your Annual Report",
+    page_icon="📊",
+    layout="wide"
+)
+
+setup_on_cold_start()   # ← add this line

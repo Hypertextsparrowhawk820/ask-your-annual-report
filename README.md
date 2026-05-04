@@ -12,7 +12,7 @@
 
 ---
 
-## 🎯 What This Project Does
+## What This Project Does
 
 Most RAG demos just answer from documents. This one is a **fully hybrid conversational AI** — it routes every user message to the right intelligence source automatically.
 
@@ -22,13 +22,13 @@ Most RAG demos just answer from documents. This one is a **fully hybrid conversa
 | *"Compare Microsoft and Tesla's AI strategy"* | Retrieves from each company separately → structured comparison |
 | *"Who is the Prime Minister of India?"* | Routes to Tavily web search → grounded answer with live sources |
 | *"Hello! How are you?"* | Responds conversationally like a friendly AI assistant |
-| *"haii 👋"* | Matches the energy — casual, warm response |
+| *"haii "* | Matches the energy — casual, warm response |
 
 **Key result:** Correctly answered 16/20 domain-specific financial questions with accurate page-level citations from SEC filings.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### High-level routing
 
@@ -91,7 +91,7 @@ Streamlit UI renders answer + collapsible source expander
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Tool | Why |
 |---|---|---|
@@ -106,7 +106,7 @@ Streamlit UI renders answer + collapsible source expander
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ask-your-annual-report/
@@ -143,7 +143,7 @@ ask-your-annual-report/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -255,7 +255,7 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 💬 Example Questions
+## Example Questions
 
 **Financial — answered from 10-K filings with citations:**
 ```
@@ -289,35 +289,35 @@ Thanks!
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🔀 Smart intent routing
+### Smart intent routing
 Every message is classified by Llama 3.3 70B before processing:
 - `casual` → warm, conversational LLM response
 - `financial` → RAG pipeline with 10-K filings
 - `general` → Tavily live web search
 
-### 📄 Page-level citations
+### Page-level citations
 Every financial answer includes exact citations: company name, page number, and source file. Users always know exactly where the information came from.
 
-### 🔁 Multi-company comparison mode
+### Multi-company comparison mode
 Enable "Comparison mode" in the sidebar to retrieve context from each selected company separately and get a structured side-by-side answer.
 
-### 🌐 Live web search fallback
+### Live web search fallback
 General knowledge questions are answered using Tavily web search — so the bot never says "I don't know" for out-of-domain questions.
 
-### 💬 Conversational personality
+### Conversational personality
 Handles informal messages (greetings, thanks, casual chat) naturally — not robotically redirecting every message to the documents.
 
-### 🔒 Zero hallucination design for financials
+### Zero hallucination design for financials
 Financial answers are strictly grounded in filing context. The LLM is explicitly instructed to say "I don't have enough information" rather than guess.
 
-### ⚡ Free infrastructure
+### Free infrastructure
 Entirely free to run — Groq free tier + Tavily free tier + local FAISS + local embeddings.
 
 ---
 
-## 📊 Evaluation Results
+## Evaluation Results
 
 Manually evaluated on 20 domain-specific questions across all three companies:
 
@@ -333,7 +333,7 @@ Manually evaluated on 20 domain-specific questions across all three companies:
 
 ---
 
-## 🚧 Known Limitations
+## Known Limitations
 
 | Limitation | Root cause | Workaround |
 |---|---|---|
@@ -345,7 +345,7 @@ Manually evaluated on 20 domain-specific questions across all three companies:
 
 ---
 
-## 🔮 Roadmap / Future Improvements
+## Roadmap / Future Improvements
 
 - [ ] Add more companies — Amazon, Google, Meta 10-K filings
 - [ ] Structured table extraction for precise financial data
@@ -358,7 +358,7 @@ Manually evaluated on 20 domain-specific questions across all three companies:
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### `faiss-cpu` install fails
 ```bash
@@ -393,7 +393,7 @@ Or download PDFs manually from SEC EDGAR (recommended for clean results).
 
 ---
 
-## 📦 Requirements
+## Requirements
 
 Full `requirements.txt`:
 
@@ -416,7 +416,7 @@ tqdm==4.66.5
 
 ---
 
-## 🗂️ How to Add More Companies
+## How to Add More Companies
 
 1. Download the company's 10-K PDF from SEC EDGAR
 2. Save to `data/sec_filings/TICKER_10K_YEAR.pdf` (e.g. `AMZN_10K_2025.pdf`)
@@ -440,7 +440,7 @@ tqdm==4.66.5
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
 
@@ -452,13 +452,13 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License — free to use, modify, and distribute.
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 - [LangChain](https://langchain.com) — RAG orchestration framework
 - [Groq](https://groq.com) — blazing fast free LLM inference
@@ -469,8 +469,8 @@ This project is licensed under the MIT License — free to use, modify, and dist
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Built as part of a data science portfolio project — Tier 4 GenAI/LLM project in the ML project roadmap.
 
-If you found this useful, please ⭐ star the repo!
+If you found this useful, please star the repo!

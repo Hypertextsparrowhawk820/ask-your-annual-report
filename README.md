@@ -1,4 +1,4 @@
-# 📊 Ask Your Annual Report
+# Ask Your Annual Report
 
 > A hybrid AI-powered financial analyst chatbot that answers questions from **Apple, Microsoft & Tesla's 2025 SEC 10-K filings** — and searches the web for everything else.
 

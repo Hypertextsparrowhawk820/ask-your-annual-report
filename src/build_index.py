@@ -15,7 +15,7 @@ def build_index():
     chunks = process_all_filings()
 
     # Step 2 — convert to LangChain Document objects
-    print("\nConverting to documents...")
+    print("Converting to documents...")
     documents = [
         Document(
             page_content=chunk["text"],
@@ -25,36 +25,34 @@ def build_index():
     ]
     print(f"  {len(documents)} documents ready")
 
-    # Step 3 — load embedding model (downloads once, ~80MB)
-    print("\nLoading embedding model...")
+    # Step 3 — load embedding model
+    print("Loading embedding model...")
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
         model_kwargs={"device": "cpu"},
         encode_kwargs={"normalize_embeddings": True}
     )
-    print("  Model loaded")
+    print("Model loaded")
 
-    # Step 4 — build FAISS index (this takes 1-2 mins)
-    print("\nBuilding FAISS index — this takes 1-2 minutes...")
-    vectorstore = FAISS.from_documents(
-        tqdm(documents, desc="  Embedding"),
-        embeddings
-    )
+    # Step 4 — build FAISS index
+    print("Building FAISS index...")
+    vectorstore = FAISS.from_documents(documents, embeddings)
 
     # Step 5 — save to disk
     os.makedirs(VECTORSTORE_DIR, exist_ok=True)
     vectorstore.save_local(VECTORSTORE_DIR)
-    print(f"\nFAISS index saved to: {os.path.abspath(VECTORSTORE_DIR)}")
+    print(f"FAISS index saved to: {os.path.abspath(VECTORSTORE_DIR)}")
+    return vectorstore
 
-    # Step 6 — quick retrieval test
+if __name__ == "__main__":
+    vs = build_index()
+
+    # quick retrieval test
     print("\nTesting retrieval...")
-    results = vectorstore.similarity_search(
+    results = vs.similarity_search(
         "What are Tesla's main risk factors?", k=3
     )
     for i, doc in enumerate(results, 1):
         print(f"\nResult {i}:")
         print(f"  Company: {doc.metadata['company']} | Page: {doc.metadata['page']}")
         print(f"  Text: {doc.page_content[:150]}...")
-
-if __name__ == "__main__":
-    build_index()

@@ -31,16 +31,22 @@ def setup_on_cold_start():
     faiss_path = os.path.join(vectorstore_path, "index.faiss")
 
     if not os.path.exists(faiss_path):
-        import subprocess
         with st.spinner("First time setup — downloading filings and building index (3-5 mins)..."):
-            from download_filings import download_all_filings
-            download_all_filings()
-            subprocess.run(
-                ["python", os.path.join(
-                    os.path.dirname(__file__), "..", "src", "build_index.py"
-                )],
-                check=True
-            )
+            try:
+                # download PDFs from Google Drive
+                from download_filings import download_all_filings
+                download_all_filings()
+
+                # build index directly (no subprocess)
+                src_path = os.path.join(os.path.dirname(__file__), "..", "src")
+                sys.path.insert(0, src_path)
+                from build_index import build_index
+                build_index()
+
+            except Exception as e:
+                st.error(f"Setup failed: {e}")
+                st.stop()
+
         st.success("Setup complete! Reloading...")
         st.rerun()
 

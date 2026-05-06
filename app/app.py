@@ -1,14 +1,21 @@
 # app/app.py
 import os
 import sys
-import subprocess
-from startup import index_exists
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from dotenv import load_dotenv
 load_dotenv()
 
 import streamlit as st
+
+# ── MUST BE FIRST STREAMLIT COMMAND ──────────────────────────
+st.set_page_config(
+    page_title="Ask Your Annual Report",
+    page_icon="📊",
+    layout="wide"
+)
+
+# ── all other imports after set_page_config ───────────────────
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
@@ -16,12 +23,28 @@ from langchain.schema import HumanMessage
 from retriever import load_vectorstore, get_retriever, get_comparison_docs
 from router import classify_intent, web_search
 
-# ── page config ───────────────────────────────────────────────
-st.set_page_config(
-    page_title="Ask Your Annual Report",
-    page_icon="📊",
-    layout="wide"
-)
+# ── cold start setup ──────────────────────────────────────────
+def setup_on_cold_start():
+    vectorstore_path = os.path.join(
+        os.path.dirname(__file__), "..", "vectorstore"
+    )
+    faiss_path = os.path.join(vectorstore_path, "index.faiss")
+
+    if not os.path.exists(faiss_path):
+        import subprocess
+        with st.spinner("First time setup — downloading filings and building index (3-5 mins)..."):
+            from download_filings import download_all_filings
+            download_all_filings()
+            subprocess.run(
+                ["python", os.path.join(
+                    os.path.dirname(__file__), "..", "src", "build_index.py"
+                )],
+                check=True
+            )
+        st.success("Setup complete! Reloading...")
+        st.rerun()
+
+setup_on_cold_start()
 
 # ── casual triggers ───────────────────────────────────────────
 CASUAL_TRIGGERS = [
@@ -38,8 +61,8 @@ CASUAL_RESPONSES = {
     "good morning": "Good morning! What can I help you with today?",
     "good evening": "Good evening! What would you like to explore?",
     "good afternoon": "Good afternoon! Ask me anything — financial or general.",
-    "what's up": "All good! Ask me about revenues, risks, strategies, or anything else you're curious about.",
-    "whats up": "All good! Ask me about revenues, risks, strategies, or anything else you're curious about.",
+    "what's up": "All good! Ask me about revenues, risks, strategies, or anything else.",
+    "whats up": "All good! Ask me about revenues, risks, strategies, or anything else.",
     "who are you": (
         "I'm a hybrid financial analyst assistant. I can:\n\n"
         "- Answer questions about **Apple, Microsoft & Tesla** from their 2025 SEC 10-K filings\n"
@@ -56,7 +79,7 @@ CASUAL_RESPONSES = {
         "- Current events, people, science, sports\n"
         "- I'll search the web and give you a grounded answer"
     ),
-    "what are you": "I'm an AI-powered assistant that combines financial analysis from SEC 10-K filings with live web search for general questions.",
+    "what are you": "I'm an AI-powered assistant combining financial analysis from SEC 10-K filings with live web search.",
     "thank you": "You're welcome! Feel free to ask anything else.",
     "thanks": "Happy to help! Any other questions?",
     "bye": "Goodbye! Come back anytime.",
@@ -214,25 +237,22 @@ if not selected_companies:
     st.warning("Please select at least one company in the sidebar.")
     st.stop()
 
-# init chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# render existing chat history
+# render history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg["role"] == "assistant":
             source_type = msg.get("source_type", "none")
             sources = msg.get("sources", [])
-
             if source_type == "financial" and sources:
-                with st.expander("Sources — 10-K filings"):
+                with st.expander("📄 Sources — 10-K filings"):
                     for s in sources:
                         st.markdown(
                             f"- **{s['company']}** · Page {s['page']} · `{s['source']}`"
                         )
-
             elif source_type == "web" and sources:
                 with st.expander("Sources — web search"):
                     for s in sources:
@@ -241,7 +261,6 @@ for msg in st.session_state.messages:
 # chat input
 user_input = st.chat_input("Ask anything — financials or general knowledge...")
 
-# inject example question from sidebar buttons
 if "prefill" in st.session_state and not user_input:
     user_input = st.session_state.pop("prefill")
 
@@ -253,7 +272,6 @@ if user_input:
 
     with st.chat_message("assistant"):
 
-        # 1 — casual / greeting
         casual, trigger = is_casual(user_input)
         if casual:
             answer = get_casual_response(trigger)
@@ -265,14 +283,13 @@ if user_input:
                 "source_type": "none"
             })
 
-        # 2 — financial or general via router
         else:
-            with st.spinner("Analyzing..."):
+            with st.spinner("Thinking..."):
                 vectorstore, llm = load_resources()
                 intent = classify_intent(user_input, llm)
 
-                # ── financial → RAG ───────────────────────────
-                if intent == "financial":
+            if intent == "financial":
+                with st.spinner("Analyzing..."):
                     if compare_mode and len(selected_companies) > 1:
                         answer, source_docs = run_comparison(
                             vectorstore, llm, user_input, selected_companies
@@ -283,66 +300,34 @@ if user_input:
                         answer = result["result"]
                         source_docs = result["source_documents"]
 
-                    st.markdown(answer)
-                    sources = dedupe_sources(source_docs)
+                st.markdown(answer)
+                sources = dedupe_sources(source_docs)
+                if sources:
+                    with st.expander("Sources — 10-K filings"):
+                        for s in sources:
+                            st.markdown(
+                                f"- **{s['company']}** · Page {s['page']} · `{s['source']}`"
+                            )
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": answer,
+                    "sources": sources,
+                    "source_type": "financial"
+                })
 
-                    if sources:
-                        with st.expander("Sources — 10-K filings"):
-                            for s in sources:
-                                st.markdown(
-                                    f"- **{s['company']}** · Page {s['page']} · `{s['source']}`"
-                                )
-
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": answer,
-                        "sources": sources,
-                        "source_type": "financial"
-                    })
-
-                # ── general → web search ──────────────────────
-                else:
+            else:
+                with st.spinner("Searching..."):
                     answer, web_sources = web_search(user_input, llm)
-                    st.markdown(answer)
 
-                    if web_sources:
-                        with st.expander("Sources — web search"):
-                            for s in web_sources:
-                                st.markdown(f"- [{s['title']}]({s['url']})")
+                st.markdown(answer)
+                if web_sources:
+                    with st.expander("Sources — web search"):
+                        for s in web_sources:
+                            st.markdown(f"- [{s['title']}]({s['url']})")
 
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": answer,
-                        "sources": web_sources,
-                        "source_type": "web"
-                    })
-def setup_on_cold_start():
-    """Download PDFs and build index if not present (for cloud deployment)."""
-    vectorstore_path = os.path.join(
-        os.path.dirname(__file__), "..", "vectorstore"
-    )
-    faiss_path = os.path.join(vectorstore_path, "index.faiss")
-
-    if not os.path.exists(faiss_path):
-        with st.spinner("Setting up for first time — downloading filings and building index (3-5 mins)..."):
-            # download PDFs
-            sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
-            from download_filings import download_all_filings
-            download_all_filings()
-
-            # build index
-            subprocess.run(
-                ["python", os.path.join(
-                    os.path.dirname(__file__), "..", "src", "build_index.py"
-                )],
-                check=True
-            )
-        st.success("Setup complete! Reloading...")
-        st.rerun()
-st.set_page_config(
-    page_title="Ask Your Annual Report",
-    page_icon="📊",
-    layout="wide"
-)
-
-setup_on_cold_start()   # ← add this line
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": answer,
+                    "sources": web_sources,
+                    "source_type": "web"
+                })

